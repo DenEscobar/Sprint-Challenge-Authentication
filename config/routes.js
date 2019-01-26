@@ -55,7 +55,29 @@ function register(req, res) {
 function login(req, res) {
   // implement user login
   const creds = req.body;
-  if(creds.username && creds)
+  if(creds.username && creds.password){
+    db('users').where('username', creds.username)
+    .then(user => {
+      if(user && bcrypt.compareSync(creds.password, user[0].password)) {
+        const token = generateToken(user)
+        res.json({info: "Logged In", token})
+      } else {
+        res
+        .status(404)
+        .json({error: "Please check username and password"})
+      }
+    })
+    .catch(err => {
+      res
+      .status(500)
+      .send(err)
+    })
+
+  } else {
+    res
+    .status(400)
+    .json({errorMessage: "Please provide your username and password"})
+  }
 }
 
 function getJokes(req, res) {
